@@ -1,32 +1,41 @@
-'use strict';
 
-import { Adapter } from 'hubot';  // Adjust the import path if needed
+'use strict'
 
-class MockAdapter extends Adapter {
-  async send(envelope, ...strings) {
-    this.emit('send', envelope, strings);
+import { Adapter } from 'hubot'
+
+export class MockAdapter extends Adapter {
+  constructor (robot) {
+    super(robot)
+    this.name = 'MockAdapter'
   }
 
-  async reply(envelope, ...strings) {
-    this.emit('reply', envelope, strings);
+  async send (envelope, ...strings) {
+    this.emit('send', envelope, ...strings)
   }
 
-  async topic(envelope, ...strings) {
-    this.emit('topic', envelope, strings);
+  async reply (envelope, ...strings) {
+    this.emit('reply', envelope, ...strings)
   }
 
-  async play(envelope, ...strings) {
-    this.emit('play', envelope, strings);
+  async topic (envelope, ...strings) {
+    this.emit('topic', envelope, ...strings)
   }
 
-  async run() {
-    this.emit('connected');
+  async play (envelope, ...strings) {
+    this.emit('play', envelope, ...strings)
   }
 
-  close() {
-    this.emit('closed');
+  run () {
+    // This is required to get the scripts loaded
+    this.emit('connected')
+  }
+
+  close () {
+    this.emit('closed')
   }
 }
-
-// Export the use method as an ESM export
-export const use = (robot) => new MockAdapter(robot);
+export default {
+  use (robot) {
+    return new MockAdapter(robot)
+  }
+}

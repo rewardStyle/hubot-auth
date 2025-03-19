@@ -3,31 +3,42 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import path from 'path';
 import assert from 'node:assert/strict';
-import Hubot from 'hubot';
-
-const { Robot, TextMessage } = Hubot;
-
-const newTestRobot = async () => {
-  process.env.PORT = '0';
-  const robot = new Robot('mock-adapter', false, 'hubot');
-
-  await robot.loadFile(path.resolve('src/'), 'Auth.mjs');
-  await robot.loadAdapter('./test/fixtures/MockAdapter.mjs');
-
-  robot.adapter.on('connected', () => robot.brain.userForId('1', {
-    name: 'admin',
-    real_name: 'Admin User',
-    room: '#test'
-  }));
-
-  return robot;
-};
+import { Robot, TextMessage }  from 'hubot';
+import MockAdapter from './fixtures/MockAdapter.mjs';
 
 describe('auth', () => {
   let robot = null;
 
   beforeEach(async () => {
-    robot = await newTestRobot();
+    process.env.HUBOT_AUTH_ADMIN = '1,2';
+    robot = new Robot(MockAdapter, false, 'TestAuthBot');
+
+    await robot.loadAdapter();
+    await robot.loadFile(path.resolve('src/'), 'Auth.mjs');
+    
+    robot.adapter.on('connected', async () => {
+      robot.brain.userForId('1', {
+        name: 'admin',
+        real_name: 'Admin User',
+        room: '#test'
+      });
+      robot.brain.userForId('2', {
+        name: 'admin2',
+        real_name: 'Admin User 2',
+        room: '#test'
+      });
+      robot.brain.userForId('3', {
+        name: 'user',
+        real_name: 'Regular User',
+        room: '#test'
+      });
+      robot.brain.userForId('4', {
+        name: 'user2',
+        real_name: 'Regular User 2',
+        room: '#test'
+      });
+    });
+
     await robot.run();
   });
 
@@ -35,37 +46,98 @@ describe('auth', () => {
     robot.shutdown();
   });
 
-  describe('when checking admin status', () => {
-    it('should return true for admin user', async () => {
-      const user = robot.brain.userForId('1');
-      const auth = new robot.auth();
-      assert.equal(auth.isAdmin(user), true);
-    });
+  describe('Assigning roles', () => 
+    it('should match admins not allowed', async () => {
+      let wasCalled = false
+      robot.adapter.on('reply', async (envelope, ...strings) => {
+        assert.equal(strings.length, 1)
+        assert.equal(strings[0], 'Sorry, only admins can assign roles.')
+        wasCalled = true
+      })
 
-    it('should return false for non-admin user', async () => {
-      const user = robot.brain.userForId('2', {
-        name: 'regular',
-        real_name: 'Regular User',
-        room: '#test'
-      });
-      const auth = new robot.auth();
-      assert.equal(auth.isAdmin(user), false);
-    });
-  });
+      const nonAdminUser = robot.brain.userForId('3');
+      const message = new TextMessage(nonAdminUser, 'TestAuthBot admin has jester role');
+      await robot.receive(message);
+      
+      assert.deepEqual(wasCalled, true)
+    }),
+    it('should match fakeuser does not exist', async () => {
+      let wasCalled = false
+      robot.adapter.on('reply', async (envelope, ...strings) => {
+        assert.equal(strings.length, 1)
+        assert.equal(strings[0], 'fakeuser does not exist')
+        wasCalled = true
+      })
 
-  describe('when checking user roles', () => {
-    it('should return true if user has the role', async () => {
-      const user = robot.brain.userForId('1');
-      const auth = new robot.auth();
-      robot.brain.set('userRoles', { '1': ['admin'] });
-      assert.equal(auth.hasRole(user, 'admin'), true);
-    });
+      const adminUser = robot.brain.userForId('1');
+      const message = new TextMessage(adminUser, 'TestAuthBot fakeuser has jester role');
+      await robot.receive(message);
+      
+      assert.deepEqual(wasCalled, true)
+    }),
+    it('should say the role has already been assigned', async () => {
+      let wasCalled = false
+      robot.adapter.on('reply', async (envelope, ...strings) => {
+        if(strings[0].includes('OK')) return
+        assert.equal(strings.length, 1)
+        assert.equal(strings[0], `user2 already has the '#{newRole}' role.`)
+        wasCalled = true
+      })
 
-    it('should return false if user does not have the role', async () => {
-      const user = robot.brain.userForId('1');
-      const auth = new robot.auth();
-      robot.brain.set('userRoles', { '1': ['user'] });
-      assert.equal(auth.hasRole(user, 'admin'), false);
-    });
-  });
+      const adminUser = robot.brain.userForId('1');
+      const message = new TextMessage(adminUser, 'TestAuthBot user2 has jester role');
+      await robot.receive(message);
+      await robot.receive(message);
+      
+      assert.deepEqual(wasCalled, true)
+    }),
+    it('should say admin can only be defined in env variable', async () => {
+      let wasCalled = false
+      robot.adapter.on('reply', async (envelope, ...strings) => {
+        assert.equal(strings.length, 1)
+        assert.equal(strings[0], "Sorry, the 'admin' role can only be defined in the HUBOT_AUTH_ADMIN env variable.")
+        wasCalled = true
+      })
+
+      const adminUser = robot.brain.userForId('1');
+      const message = new TextMessage(adminUser, 'TestAuthBot admin has admin role');
+      await robot.receive(message);
+      
+      assert.deepEqual(wasCalled, true)
+    }),
+    it('should say the role has been assigned', async () => {
+      let wasCalled = false
+      robot.adapter.on('reply', async (envelope, ...strings) => {
+        assert.equal(strings.length, 1)
+        assert.equal(strings[0], `OK, admin has the '#{newRole}' role.`)
+        wasCalled = true
+      })
+
+      const adminUser = robot.brain.userForId('1');
+      const message = new TextMessage(adminUser, 'TestAuthBot admin has jester role');
+      await robot.receive(message);
+      
+      assert.deepEqual(wasCalled, true)
+    })
+  );
+  describe('Removing roles', () => 
+    it('should say the role has been assigned', async () => {
+    })
+  );
+  describe('Checking who has role', () => 
+    it('Should list the people with role', async () => {
+    })
+  );
+  describe('List all roles', () => 
+    it('Should list all roles', async () => {
+    })
+  );
+  describe('Check name', () => 
+    it('Checks user name', async () => {
+    })
+  );
+  describe('Check ID', () => 
+    it('Checks user id', async () => {
+    })
+  );
 });

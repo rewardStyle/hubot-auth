@@ -28,6 +28,10 @@
     "type": "git",
     "url": "git://github.com/hubot-scripts/hubot-auth.git"
   },
+  "files": [
+    "index.mjs",
+    "src"
+  ],
   "engines": {
     "node": ">= 18"
   },
