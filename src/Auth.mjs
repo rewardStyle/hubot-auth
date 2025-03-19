@@ -104,13 +104,13 @@ export default (robot) => {
         user.roles = user.roles || []
 
         if (user.roles.includes(newRole)) {
-          msg.reply(`${name} already has the '#{newRole}' role.`)
+          msg.reply(`${name} already has the '${newRole}' role.`)
         } else {
           if (newRole === 'admin') {
             msg.reply("Sorry, the 'admin' role can only be defined in the HUBOT_AUTH_ADMIN env variable.")
           } else {
             user.roles.push(newRole)
-            msg.reply(`OK, ${name} has the '#{newRole}' role.`)
+            msg.reply(`OK, ${name} has the '${newRole}' role.`)
           }
         }
       }
@@ -137,7 +137,7 @@ export default (robot) => {
           msg.reply("Sorry, the 'admin' role can only be removed from the HUBOT_AUTH_ADMIN env variable.")
         } else {
           user.roles = user.roles.filter(role => role !== newRole)
-          msg.reply(`OK, ${name} doesn't have the '#{newRole}' role.`)
+          msg.reply(`OK, ${name} doesn't have the '${newRole}' role.`)
         }
       }
     }
@@ -164,9 +164,9 @@ export default (robot) => {
     const userNames = robot.auth.usersWithRole(role)
 
     if (userNames.length > 0) {
-      msg.reply(`The following people have the '#{role}' role: ${userNames.join(', ')}`)
+      msg.reply(`The following people have the '${role}' role: ${userNames.join(', ')}`)
     } else {
-      msg.reply('There are no people that have the \'#{role}\' role.')
+      msg.reply('There are no people that have the \'${role}\' role.')
     }
   })
 

@@ -80,7 +80,7 @@ describe('auth', () => {
       robot.adapter.on('reply', async (envelope, ...strings) => {
         if(strings[0].includes('OK')) return
         assert.equal(strings.length, 1)
-        assert.equal(strings[0], `user2 already has the '#{newRole}' role.`)
+        assert.equal(strings[0], `user2 already has the 'jester' role.`)
         wasCalled = true
       })
 
@@ -109,7 +109,7 @@ describe('auth', () => {
       let wasCalled = false
       robot.adapter.on('reply', async (envelope, ...strings) => {
         assert.equal(strings.length, 1)
-        assert.equal(strings[0], `OK, admin has the '#{newRole}' role.`)
+        assert.equal(strings[0], `OK, admin has the 'jester' role.`)
         wasCalled = true
       })
 
@@ -126,7 +126,7 @@ describe('auth', () => {
       let wasCalled = false
       robot.adapter.on('reply', async (envelope, ...strings) => {
         assert.equal(strings.length, 1)
-        assert.equal(strings[0], `OK, user doesn't have the '#{newRole}' role.`)
+        assert.equal(strings[0], `OK, user doesn't have the 'jester' role.`)
         wasCalled = true
       })
 
@@ -145,9 +145,8 @@ describe('auth', () => {
     it('should list the people with role', async () => {
       let wasCalled = false
       robot.adapter.on('reply', async (envelope, ...strings) => {
-        console.log(strings)
         assert.equal(strings.length, 1)
-        assert.equal(strings[0], `The following people have the '#{role}' role: user`)
+        assert.equal(strings[0], `The following people have the 'jester' role: user`)
         wasCalled = true
       })
 
