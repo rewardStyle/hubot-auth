@@ -1,7 +1,7 @@
 {
   "name": "hubot-auth",
   "description": "Assign roles to users and restrict command access in other scripts",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "author": "Alex Williams (http://github.com/aw)",
   "contributors": [
     "technicalpickles",
@@ -28,26 +28,36 @@
     "type": "git",
     "url": "git://github.com/hubot-scripts/hubot-auth.git"
   },
+  "files": [
+    "index.mjs",
+    "src"
+  ],
+  "engines": {
+    "node": ">= 18"
+  },
   "bugs": {
     "url": "https://github.com/hubot-scripts/hubot-auth/issues"
   },
-  "dependencies": {
-    "coffee-script": "^1.10.0"
+  "peerDependencies": {
+    "hubot": ">= 11 || 0.0.0-development"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
-    "co": "^4.6.0",
-    "grunt": "^0.4.5",
-    "grunt-contrib-watch": "^1.0.0",
-    "grunt-mocha-test": "^0.12.7",
-    "grunt-release": "^0.13.0",
-    "hubot": "^2.18.0",
-    "hubot-test-helper": "^1.4.4",
-    "matchdep": "^1.0.1",
-    "mocha": "^2.4.5"
+    "sinon": "^19.0.2",
+    "standard": "^17.1.0",
+    "chai": "^5.2.0"
   },
-  "main": "index.coffee",
+  "main": "index.mjs",
+  "type": "module",
   "scripts": {
-    "test": "grunt test"
+    "pretest": "standard",
+    "test": "node --test test/*.mjs",
+    "test:watch": "node --watch --test"
+  },
+  "release": {
+    "branches": [
+      "main",
+      "next"
+    ],
+    "dryRun": false
   }
 }
