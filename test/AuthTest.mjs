@@ -120,24 +120,99 @@ describe('auth', () => {
       assert.deepEqual(wasCalled, true)
     })
   );
+
   describe('Removing roles', () => 
-    it('should say the role has been assigned', async () => {
+    it('should say the role has been removed', async () => {
+      let wasCalled = false
+      robot.adapter.on('reply', async (envelope, ...strings) => {
+        assert.equal(strings.length, 1)
+        assert.equal(strings[0], `OK, user doesn't have the '#{newRole}' role.`)
+        wasCalled = true
+      })
+
+      const adminUser = robot.brain.userForId('1');
+      const user = robot.brain.userForId('3');
+      user.roles = user.roles || []
+      user.roles.push('jester');
+      const message = new TextMessage(adminUser, 'TestAuthBot user doesn\'t have jester role');
+      await robot.receive(message);
+      
+      assert.deepEqual(wasCalled, true)
     })
   );
+
   describe('Checking who has role', () => 
-    it('Should list the people with role', async () => {
+    it('should list the people with role', async () => {
+      let wasCalled = false
+      robot.adapter.on('reply', async (envelope, ...strings) => {
+        console.log(strings)
+        assert.equal(strings.length, 1)
+        assert.equal(strings[0], `The following people have the '#{role}' role: user`)
+        wasCalled = true
+      })
+
+      const adminUser = robot.brain.userForId('1');
+      const user = robot.brain.userForId('3');
+      user.roles = user.roles || []
+      user.roles.push('jester');
+      const message = new TextMessage(adminUser, 'TestAuthBot who has jester role');
+      await robot.receive(message);
+      
+      assert.deepEqual(wasCalled, true)
     })
   );
+
   describe('List all roles', () => 
-    it('Should list all roles', async () => {
+    it('should list all roles', async () => {
+      let wasCalled = false
+      robot.adapter.on('reply', async (envelope, ...strings) => {
+        assert.equal(strings.length, 1)
+        assert.equal(strings[0], 'The following roles are available: jester')
+        wasCalled = true
+      })
+
+      const adminUser = robot.brain.userForId('1');
+      const user = robot.brain.userForId('3');
+      user.roles = user.roles || []
+      user.roles.push('jester');
+      const message = new TextMessage(adminUser, 'TestAuthBot list assigned roles');
+      await robot.receive(message);
+      
+      assert.deepEqual(wasCalled, true)
     })
   );
+
   describe('Check name', () => 
-    it('Checks user name', async () => {
+    it('checks user name', async () => {
+      let wasCalled = false
+      robot.adapter.on('reply', async (envelope, ...strings) => {
+        assert.equal(strings.length, 1)
+        assert.equal(strings[0], 'Your name is: admin.')
+        wasCalled = true
+      })
+
+      const adminUser = robot.brain.userForId('1');
+      const message = new TextMessage(adminUser, 'TestAuthBot what is my name');
+      await robot.receive(message);
+      
+      assert.deepEqual(wasCalled, true)
     })
   );
+
   describe('Check ID', () => 
-    it('Checks user id', async () => {
+    it('checks user id', async () => {
+      let wasCalled = false
+      robot.adapter.on('reply', async (envelope, ...strings) => {
+        assert.equal(strings.length, 1)
+        assert.equal(strings[0], 'Your ID is: 1.')
+        wasCalled = true
+      })
+
+      const adminUser = robot.brain.userForId('1');
+      const message = new TextMessage(adminUser, 'TestAuthBot what is my id');
+      await robot.receive(message);
+      
+      assert.deepEqual(wasCalled, true)
     })
   );
 });
